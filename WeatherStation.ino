@@ -8,14 +8,11 @@ Barometer barometer;
 #include <TroykaDHT11.h>
 #define TEMP_PIN A0 // Аналоговый датчик температуры подключен к A0 
 unsigned long time;
+float temperature;
+float pressure;
 
 // создаём объект класса DHT11 и пераём номер пина к которому подкючён датчик
 DHT11 dht(11);
-
-// uint16_t raw_bandgap = 0;      // значение внутреннего bandgap
-// float volt_battery = 0.0;
-// unsigned int step = 1;
-// float average = 0.0;
 
 void setup()
 { 
@@ -29,62 +26,50 @@ void loop()
 {
   if (millis() % 10000 == 0)
   {
-  // Чтение напряжения батареи
-  // analogReference(DEFAULT);                   // использовать Vcc как AREF
-  // raw_bandgap = analogRead(14);               // холостое чтение после смены AREF (см. 23.5.2 в руководстве)
-  // average = 0.0;
-  // for (int i = 0; i < 10; i++)
-  // {
-    // raw_bandgap += analogRead(14);             // измерить значение внутреннего bandgap
-    // delay(10);
-    // step++;
-  // }        
-  // volt_battery = (1.1 * 1024) / average / 10;  // вычислить Vcc
-
+  
   // Временные костыли с подсчётом времени
   printtime();
 
-  // Serial.print(volt_battery);
-  // Serial.print("\t");
-
-  // создаём переменную и присваиваем ей значения абсолютного давления
-  float pressure = barometer.readPressureMillibars() / 1.3332;
-  // создаём переменную и присваиваем ей температуру окружающей среды
-  float temperature = barometer.readTemperatureC();
+  // читаем значение абсолютного давления
+  pressure = 0.0;
+  for(int i=0; i<5; i++){
+      pressure += barometer.readPressureMillibars() / 1.3332;
+  }
+  pressure = pressure / 5; 
+  
+  // читаем значение температуры окружающей среды
+  temperature = 0.0;
+  for(int i=0; i<5; i++){
+      temperature += barometer.readTemperatureC();
+  }
+  temperature = temperature / 5;
 
   // Вывод данных в Serial порт
-  //Serial.print("p: ");
   Serial.print(pressure);
   Serial.print(";");
-  //Serial.print(" mm Hg \t");
-  //Serial.print("t: ");
   Serial.print(temperature);
   Serial.print(";");
-  //Serial.println(" C");
+
+  // считывание данных с аналог. термометра
+  float atemp = 0.0;
+  for(int i=0; i<5; i++){
+      atemp = atemp + (analogRead(TEMP_PIN) * (5.0 / 1024.0) - 0.5) * 100.0;
+  }
+  atemp = atemp / 5;
+  Serial.print(atemp);
+  Serial.print(";");
 
   // переменная состояния датчика
-  int check;
-
+  int check;  
   // мониторинг ошибок
-
-  int val = analogRead(TEMP_PIN); // считывание данных с аналог. термометра
-  float atemp = (val*(5.0/1024.0)-0.5)*100;
-
   check = dht.read(); // считывание данных с датчика DHT11
   switch (check) {
     // всё OK
     case DHT_OK:
       // выводим показания влажности и температуры
-
-      //Serial.print("Температура = ");
       Serial.print(dht.getTemperatureC());
       Serial.print(";");
-      //Serial.print("C \t");
-      //Serial.print("Влажность = ");
-      Serial.print(dht.getHumidity());
-      Serial.print(";");
-      //Serial.print("% \t");
-      Serial.println(atemp);
+      Serial.println(dht.getHumidity());
       break;
     // ошибка контрольной суммы
     case DHT_ERROR_CHECKSUM:
@@ -121,3 +106,4 @@ void printtime() // Выводит время в Serial
   Serial.print (time % 60);
   Serial.print(";");
 }
+
