@@ -1,3 +1,4 @@
 .pioenvs
 .travis.yml
 platformio.ini
+.DS_Store
