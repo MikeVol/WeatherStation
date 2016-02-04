@@ -5,17 +5,14 @@
 // создаём объект для работы с барометром
 Barometer barometer;
 // библиотека для работы с датчиком DHT11
-//#include <TroykaDHT11.h>
-#include "DHT.h"
-// номер пина к которому подкючён датчик DHT11
-#define DHTPIN 11
-#define DHTTYPE DHT11 //тип датчика DHT11
-DHT dht(DHTPIN, DHTTYPE);
-
+#include <TroykaDHT11.h>
 #define TEMP_PIN A0 // Аналоговый датчик температуры подключен к A0
 unsigned long time;
 float temperature;
 float pressure;
+
+// создаём объект класса DHT11 и пераём номер пина к которому подкючён датчик
+DHT11 dht(11);
 
 void setup() {
     // открываем последовательный порт для мониторинга действий в программе
@@ -25,7 +22,7 @@ void setup() {
 }
 
 void loop() {
-    if (millis() % 60000 == 0)
+    if (millis() % 10000 == 0)
     {
 
         // Временные костыли с подсчётом времени
@@ -57,36 +54,31 @@ void loop() {
         Serial.print(atemp);
         Serial.print(";");
 
-        // выводим показания влажности и температуры DHT11
-        Serial.print(dht.readTemperature());
-        Serial.print(";");
-        Serial.println(dht.readHumidity());
-
-        // // переменная состояния датчика
-        // int check;
-        // // мониторинг ошибок
-        // check = dht.read(); // считывание данных с датчика DHT11
-        // switch (check) {
-        //     // всё OK
-        //     case DHT_OK:
-        //     // выводим показания влажности и температуры
-        //     Serial.print(dht.readTemperatureC());
-        //     Serial.print(";");
-        //     Serial.println(dht.readHumidity());
-        //     break;
-        //     // ошибка контрольной суммы
-        //     case DHT_ERROR_CHECKSUM:
-        //     Serial.println("Checksum error;");
-        //     break;
-        //     // превышение времени ожидания
-        //     case DHT_ERROR_TIMEOUT:
-        //     Serial.println("Time out error;");
-        //     break;
-        //     // неизвестная ошибка
-        //     default:
-        //     Serial.println("Unknown error;");
-        //     break;
-        // }
+        // переменная состояния датчика
+        int check;
+        // мониторинг ошибок
+        check = dht.read(); // считывание данных с датчика DHT11
+        switch (check) {
+            // всё OK
+            case DHT_OK:
+            // выводим показания влажности и температуры
+            Serial.print(dht.getTemperatureC());
+            Serial.print(";");
+            Serial.println(dht.getHumidity());
+            break;
+            // ошибка контрольной суммы
+            case DHT_ERROR_CHECKSUM:
+            Serial.println("Checksum error;");
+            break;
+            // превышение времени ожидания
+            case DHT_ERROR_TIMEOUT:
+            Serial.println("Time out error;");
+            break;
+            // неизвестная ошибка
+            default:
+            Serial.println("Unknown error;");
+            break;
+        }
     }
 }
 
