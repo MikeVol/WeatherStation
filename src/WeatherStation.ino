@@ -22,9 +22,9 @@ void setup() {
 }
 
 void loop() {
-    if (millis() % 10000 == 0)
+    if (millis() % 10000 == 0 || Serial.available() > 0)
     {
-
+        Serial.read(); //читаем данные из порта
         // Временные костыли с подсчётом времени
         printtime();
 
